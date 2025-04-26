@@ -1,0 +1,167 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>MS戰地+傳授</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue"></script>
+    <style>
+        body {
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>MS戰地+傳授<span class="fs-6">資料日期 2025/04/26 ©Zenon</span></h1>
+        <p>資料來源 2024最新角色卡系統 https://forum.gamer.com.tw/C.php?bsn=7650&snA=976618</p>
+        <p>資料來源 新楓之谷傳授2025版 https://forum.gamer.com.tw/C.php?bsn=7650&snA=987437</p>
+
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title">戰地</h5>
+                <span @click="clearCardTags" class="btn btn-sm btn-outline-dark me-3">清除</span>
+                <div v-for="item in cardTags" class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input v-model="query.card" :value="item" type="checkbox" class="form-check-input">{{item}}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg mt-3">
+            <div class="card-body">
+                <h5 class="card-title">傳授</h5>
+                <span @click="clearSkillTags" class="btn btn-sm btn-outline-dark me-3">清除</span>
+                <div v-for="item in skillTags" class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input v-model="query.skill" :value="item" type="checkbox" class="form-check-input">{{item}}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-hover mt-3">
+            <tr class="table-primary">
+                <th>角色</th>
+                <th>戰地</th>
+                <th>傳授</th>
+            </tr>
+            <tr v-for="item in filterData">
+                <td width="20%">
+                    <div class="text-secondary">{{item.group}}-{{item.job}}</div>
+                    <div class="fw-bold">{{item.name}}</div>
+                </td>
+                <td width="40%" class="fw-bold">{{item.card.function}}</td>
+                <td width="40%">
+                    <div class="text-secondary">{{item.skill.name}}</div>
+                    <div class="fw-bold">{{item.skill.function}}</div>
+                </td>
+            </tr>
+        </table>
+    </main>
+    <script setup type="module">
+        const { ref, reactive, computed } = Vue;
+        const data = [
+            { group: '冒險家', job: '劍士', name: '英雄', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '不屈的信念', function: 'HP低於15%時發動效果，接下來的3秒內每秒恢復最大HP的35%(冷卻時間210秒)', tag: ['HP', '恢復'] } },
+            { group: '冒險家', job: '劍士', name: '聖騎士', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '不屈的信念', function: 'HP低於15%時發動效果，接下來的3秒內每秒恢復最大HP的35%(冷卻時間210秒)', tag: ['HP', '恢復'] } },
+            { group: '冒險家', job: '劍士', name: '黑騎士', card: { function: 'HP+6%', tag: ['HP'] }, skill: { name: '不屈的信念', function: 'HP低於15%時發動效果，接下來的3秒內每秒恢復最大HP的35%(冷卻時間210秒)', tag: ['HP', '恢復'] } },
+
+            { group: '冒險家', job: '法師', name: '冰、雷', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '實戰的知識', function: '25%機率對攻擊中HP最高的怪物觸發，每層增加總傷3%、無視3%，可疊加三層，持續10秒', tag: ['總傷', '無視'] } },
+            { group: '冒險家', job: '法師', name: '主教', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '實戰的知識', function: '25%機率對攻擊中HP最高的怪物觸發，每層增加總傷3%、無視3%，可疊加三層，持續10秒', tag: ['總傷', '無視'] } },
+            { group: '冒險家', job: '法師', name: '火、毒', card: { function: 'MP+6%', tag: ['MP'] }, skill: { name: '實戰的知識', function: '25%機率對攻擊中HP最高的怪物觸發，每層增加總傷3%、無視3%，可疊加三層，持續10秒', tag: ['總傷', '無視'] } },
+
+            { group: '冒險家', job: '弓箭手', name: '箭神', card: { function: 'DEX+100', tag: ['DEX'] }, skill: { name: '探險家的好奇心', function: '爆擊機率+10%，怪物蒐藏登錄率+35%', tag: ['爆擊機率', '怪物蒐藏'] } },
+            { group: '冒險家', job: '弓箭手', name: '開拓者', card: { function: 'DEX+100', tag: ['DEX'] }, skill: { name: '探險家的好奇心', function: '爆擊機率+10%，怪物蒐藏登錄率+35%', tag: ['爆擊機率', '怪物蒐藏'] } },
+            { group: '冒險家', job: '弓箭手', name: '神射手', card: { function: '爆擊機率+5%', tag: ['爆擊機率'] }, skill: { name: '探險家的好奇心', function: '爆擊機率+10%，怪物蒐藏登錄率+35%', tag: ['爆擊機率', '怪物蒐藏'] } },
+
+            { group: '冒險家', job: '盜賊', name: '暗影神偷', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '小偷的狡詐', function: '對怪物造成異常狀態，10秒內增加18%總傷(冷卻時間20秒)', tag: ['總傷'] } },
+            { group: '冒險家', job: '盜賊', name: '影武者', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '小偷的狡詐', function: '對怪物造成異常狀態，10秒內增加18%總傷(冷卻時間20秒)', tag: ['總傷'] } },
+            { group: '冒險家', job: '盜賊', name: '夜使者', card: { function: '爆擊機率+5%', tag: ['爆擊機率'] }, skill: { name: '小偷的狡詐', function: '對怪物造成異常狀態，10秒內增加18%總傷(冷卻時間20秒)', tag: ['總傷'] } },
+
+            { group: '冒險家', job: '海盜', name: '拳霸', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '海盜的祝福', function: '全屬性+70，最大HP/MP+1225，減傷15%', tag: ['STR', 'INT', 'DEX', 'LUK', '全屬性', 'HP', 'MP', '減傷'] } },
+            { group: '冒險家', job: '海盜', name: '重砲指揮官', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '海盜的祝福', function: '全屬性+70，最大HP/MP+1225，減傷15%', tag: ['STR', 'INT', 'DEX', 'LUK', '全屬性', 'HP', 'MP', '減傷'] } },
+            { group: '冒險家', job: '海盜', name: '槍神', card: { function: '召喚時間+12%', tag: ['召喚時間'] }, skill: { name: '海盜的祝福', function: '全屬性+70，最大HP/MP+1225，減傷15%', tag: ['STR', 'INT', 'DEX', 'LUK', '全屬性', 'HP', 'MP', '減傷'] } },
+
+            { group: '皇家騎士團', job: '劍士', name: '聖魂劍士', card: { function: 'HP+2500', tag: ['HP'] }, skill: { name: '西格諾斯的祝福', function: '物/魔攻+25，狀態異常耐性+15，所有屬性耐性+15%', tag: ['物攻', '魔攻', '異常耐性', '屬性耐性'] } },
+            { group: '皇家騎士團', job: '法師', name: '烈焰巫師', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '西格諾斯的祝福', function: '物/魔攻+25，狀態異常耐性+15，所有屬性耐性+15%', tag: ['物攻', '魔攻', '異常耐性', '屬性耐性'] } },
+            { group: '皇家騎士團', job: '弓箭手', name: '破風使者', card: { function: 'DEX+100', tag: ['DEX'] }, skill: { name: '西格諾斯的祝福', function: '物/魔攻+25，狀態異常耐性+15，所有屬性耐性+15%', tag: ['物攻', '魔攻', '異常耐性', '屬性耐性'] } },
+            { group: '皇家騎士團', job: '盜賊', name: '暗夜行者', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '西格諾斯的祝福', function: '物/魔攻+25，狀態異常耐性+15，所有屬性耐性+15%', tag: ['物攻', '魔攻', '異常耐性', '屬性耐性'] } },
+            { group: '皇家騎士團', job: '海盜', name: '閃雷悍將', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '西格諾斯的祝福', function: '物/魔攻+25，狀態異常耐性+15，所有屬性耐性+15%', tag: ['物攻', '魔攻', '異常耐性', '屬性耐性'] } },
+            { group: '皇家騎士團', job: '劍士', name: '米哈逸', card: { function: 'HP+2500', tag: ['HP'] }, skill: { name: '光之守護', function: '15秒內狀態異常耐性+100%(冷卻時間120秒)', tag: ['異常耐性'] } },
+
+            { group: '末日反抗軍', job: '劍士', name: '爆拳槍神', card: { function: '無視+6%', tag: ['無視'] }, skill: { name: '自由精神', function: '復活時8秒內無敵', tag: ['無敵'] } },
+            { group: '末日反抗軍', job: '法師', name: '煉獄巫師', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '自由精神', function: '復活時8秒內無敵', tag: ['無敵'] } },
+            { group: '末日反抗軍', job: '弓箭手', name: '狂豹獵人', card: { function: '攻擊時20%的機率增加傷害16% ', tag: ['總傷'] }, skill: { name: '自由精神', function: '復活時8秒內無敵', tag: ['無敵'] } },
+            { group: '末日反抗軍', job: '海盜', name: '機甲戰神', card: { function: '加持有效時間增加25% ', tag: ['加持時間'] }, skill: { name: '自由精神', function: '復活時8秒內無敵', tag: ['無敵'] } },
+            { group: '末日反抗軍', job: '劍士', name: '惡魔殺手', card: { function: '狀態異常抵抗增加5', tag: ['異常抵抗'] }, skill: { name: '後續待發', function: 'B傷+15%', tag: ['B傷'] } },
+            { group: '末日反抗軍', job: '劍士', name: '惡魔復仇者', card: { function: 'B傷+6%', tag: ['B傷'] }, skill: { name: '狂暴鬥氣', function: '總傷+10%', tag: ['總傷'] } },
+            { group: '末日反抗軍', job: '盜賊，盜賊', name: '傑諾', card: { function: 'STR/DEX/LUK+ 50', tag: ['STR', 'DEX', 'LUK'] }, skill: { name: '合成邏輯', function: '全屬性+10%', tag: ['STR', 'INT', 'DEX', 'LUK', '全屬性'] } },
+
+            { group: '英雄團', job: '劍士', name: '狂狼勇士', card: { function: '打擊敵人時，以70%的機率回復HP10%。每10秒發動一次，發動後，下一次的發動機率會降低，但效果會加倍', tag: ['HP', '回復'] }, skill: { name: '連續擊殺優勢', function: '連續擊殺之珠永久經驗值獲得量增加650%', tag: ['經驗'] } },
+            { group: '英雄團', job: '法師', name: '龍魔導士', card: { function: '打擊敵人時，以70%的機率回復MP10%。每10秒發動一次，發動後，下一次的發動機率會降低，但效果會加倍', tag: ['MP', '回復'] }, skill: { name: '輪之堅持', function: '地圖輪持續時間+50%', tag: ['經驗'] } },
+            { group: '英雄團', job: '弓箭手', name: '精靈遊俠', card: { function: '技能冷卻-6%', tag: ['冷卻'] }, skill: { name: '精靈的祝福', function: '經驗值+15%，櫻花處回歸(冷卻時間1800秒)', tag: ['經驗'] } },
+            { group: '英雄團', job: '盜賊', name: '幻影俠盜', card: { function: '金幣獲得+5%', tag: ['金幣'] }, skill: { name: '致命本能', function: '暴擊機率+15%', tag: ['爆擊機率'] } },
+            { group: '英雄團', job: '海盜', name: '夜光', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '波米艾特', function: '無視防禦+15%', tag: ['無視'] } },
+            { group: '英雄團', job: '劍士', name: '隱月', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '死裡逃生', function: '受到致死攻擊時以10%機率擋死', tag: ['無敵'] } },
+
+            { group: '超越者', job: '劍士', name: '神之子', card: { function: '經驗獲得+12%', tag: ['經驗'] }, skill: { name: '時之祝福', function: '受到的傷害減少15%，無視+10%', tag: ['減傷', '無視'] } },
+
+            { group: '超新星', job: '劍士', name: '凱撒', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '鋼鐵意志', function: 'HP+15%', tag: ['HP'] } },
+            { group: '超新星', job: '弓箭手', name: '凱殷', card: { function: 'DEX+100', tag: ['DEX'] }, skill: { name: '事前準備', function: '打倒8名敵人或攻擊BOSS第5次時，可以做1次準備，完成5次準備後增加17%總傷20秒(CD40秒)', tag: ['總傷'] } },
+            { group: '超新星', job: '盜賊', name: '卡蒂娜', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '集中狂擊', function: '攻擊比角色等級低的怪物時總傷+6%，攻擊狀態異常的怪物時總傷+6%', tag: ['總傷'] } },
+            { group: '超新星', job: '海盜', name: '天使破壞者', card: { function: 'DEX+100', tag: ['DEX'] }, skill: { name: '靈魂契約', function: '10秒內總傷增加45%', tag: ['總傷'] } },
+
+            { group: '雷普', job: '劍士', name: '阿戴爾', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '貴族', function: '組隊成員在同一張圖時，包含自己在內的每位隊員增加2%總傷(上限8%)，未組隊情況以2%計算。B傷+4%', tag: ['總傷', 'B傷'] } },
+            { group: '雷普', job: '法師', name: '伊利恩', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '戰鬥的流動', function: '移動一段距離後增加2%總傷，可重疊6次，效果持續5秒', tag: ['總傷'] } },
+            { group: '雷普', job: '盜賊', name: '卡莉', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '天賦', function: '總傷+5%，攻擊時100%機率在5秒內恢復HP/MP 2%(CD30秒)', tag: ['總傷', 'HP', 'MP', '恢復'] } },
+            { group: '雷普', job: '海盜', name: '亞克', card: { function: 'STR+100', tag: ['STR'] }, skill: { name: '無我', function: '戰鬥狀態持續，每五秒發動一次，可重疊5次。發動時總傷+1%，重疊一次總傷+2%(疊滿總共+11%)', tag: ['總傷'] } },
+
+            { group: '阿尼瑪', job: '法師', name: '菈菈', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '大自然夥伴', function: '總傷+5%。擊殺20隻一般怪物後，30秒內對一般怪物攻擊傷害+11%(CD30秒)', tag: ['總傷', '一般傷害'] } },
+            { group: '阿尼瑪', job: '盜賊', name: '虎影', card: { function: 'LUK+100', tag: ['LUK'] }, skill: { name: '自信心', function: '對滿血怪物的第一下攻擊+14%總傷。無視+10%', tag: ['總傷', '無視'] } },
+
+            { group: '朋友世界', job: '法師', name: '凱內西斯', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '判斷', function: '爆擊傷害+4%', tag: ['爆擊傷害'] } },
+
+            { group: '曉之陣', job: '劍士', name: '劍豪', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '疾風傳授', function: '全屬+25、物/魔攻+15', tag: ['STR', 'INT', 'DEX', 'LUK', '全屬性', '物攻', '魔攻'] } },
+            { group: '曉之陣', job: '法師', name: '陰陽師', card: { function: 'B傷+6%', tag: ['B傷'] }, skill: { name: '紫扇傳授', function: '總傷+10%', tag: ['總傷'] } },
+
+            { group: '江湖', job: '法師', name: '琳恩', card: { function: '無視+6%', tag: ['無視'] }, skill: { name: '氣魄', function: '攻擊BOSS怪物時B傷+4%。攻擊BOSS成功時額外+2%B傷，最多可以疊6層，重疊於每2秒發動一次，持續5秒(總共+16%B傷)', tag: ['B傷'] } },
+            { group: '江湖', job: '海盜', name: '墨玄', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '精靈集中', function: 'B傷+7%、暴擊機率+7%、HP/MP+4%', tag: ['B傷', '暴擊機率', 'HP', 'MP'] } },
+        ];
+        const App = {
+            setup: () => new function () {
+                this.data = data;
+                this.query = reactive({ card: [], skill: [] });
+
+                this.cardTags = computed(() => {
+                    let tags = [];
+                    data.forEach(x => tags = tags.concat(x.card.tag));
+                    return tags.filter((e, index, array) => array.indexOf(e) === index).sort();
+                });
+
+                this.clearCardTags = () => this.query.card = [];
+
+                this.skillTags = computed(() => {
+                    let tags = [];
+                    data.forEach(x => tags = tags.concat(x.skill.tag));
+                    return tags.filter((e, index, array) => array.indexOf(e) === index).sort();
+                });
+
+                this.clearSkillTags = () => this.query.skill = [];
+
+                this.filterData = computed(() => {
+                    let $ = data;
+                    if (this.query.card.length > 0) {
+                        this.query.card.forEach(q => $ = $.filter(x => x.card.tag.indexOf(q) >= 0));
+                    }
+                    if (this.query.skill.length > 0) {
+                        this.query.skill.forEach(q => $ = $.filter(x => x.skill.tag.indexOf(q) >= 0));
+                    }
+                    return $;
+                });
+            }
+        };
+        Vue.createApp(App).mount("main")
+    </script>
+</body>
+</html>
