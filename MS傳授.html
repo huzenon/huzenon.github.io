@@ -41,20 +41,31 @@
             </div>
         </div>
 
-        <table class="table table-hover mt-3">
+        <ul class="nav nav-tabs mt-3">
+            <li class="nav-item">
+                <button @click="tab='all'" :class="['nav-link',{'active':tab=='all'}]">全部</button>
+            </li>
+            <li class="nav-item dropdown">
+                <button @click="tab='skill'" :class="['nav-link',{'active':tab=='skill'}]">已選擇傳授</button>
+            </li>
+        </ul>
+
+        <table class="table table-hover">
             <tr class="table-primary">
                 <th>角色</th>
                 <th>戰地</th>
-                <th>傳授</th>
+                <th>傳授(已選擇：{{select.skill.length}})</th>
             </tr>
             <tr v-for="item in filterData">
                 <td width="20%">
-                    <div class="text-secondary">{{item.group}}-{{item.job}}</div>
+                    <label class="text-secondary">{{item.group}}-{{item.job}}</label>
                     <div class="fw-bold">{{item.name}}</div>
                 </td>
                 <td width="40%" class="fw-bold">{{item.card.function}}</td>
                 <td width="40%">
-                    <div class="text-secondary">{{item.skill.name}}</div>
+                    <label class="text-secondary">
+                        <input v-model="select.skill" :value="item.skill.name" :disabled="skillSelectDisabled(item.skill.name)" type="checkbox" class="form-check-input" />{{item.skill.name}}
+                    </label>
                     <div class="fw-bold">{{item.skill.function}}</div>
                 </td>
             </tr>
@@ -101,7 +112,7 @@
             { group: '英雄團', job: '劍士', name: '狂狼勇士', card: { function: '打擊敵人時，以70%的機率回復HP10%。每10秒發動一次，發動後，下一次的發動機率會降低，但效果會加倍', tag: ['HP', '回復'] }, skill: { name: '連續擊殺優勢', function: '連續擊殺之珠永久經驗值獲得量增加650%', tag: ['經驗'] } },
             { group: '英雄團', job: '法師', name: '龍魔導士', card: { function: '打擊敵人時，以70%的機率回復MP10%。每10秒發動一次，發動後，下一次的發動機率會降低，但效果會加倍', tag: ['MP', '回復'] }, skill: { name: '輪之堅持', function: '地圖輪持續時間+50%', tag: ['經驗'] } },
             { group: '英雄團', job: '弓箭手', name: '精靈遊俠', card: { function: '技能冷卻-6%', tag: ['冷卻'] }, skill: { name: '精靈的祝福', function: '經驗值+15%，櫻花處回歸(冷卻時間1800秒)', tag: ['經驗'] } },
-            { group: '英雄團', job: '盜賊', name: '幻影俠盜', card: { function: '金幣獲得+5%', tag: ['金幣'] }, skill: { name: '致命本能', function: '暴擊機率+15%', tag: ['爆擊機率'] } },
+            { group: '英雄團', job: '盜賊', name: '幻影俠盜', card: { function: '金幣獲得+5%', tag: ['金幣'] }, skill: { name: '致命本能', function: '爆擊機率+15%', tag: ['爆擊機率'] } },
             { group: '英雄團', job: '海盜', name: '夜光', card: { function: 'INT+100', tag: ['INT'] }, skill: { name: '波米艾特', function: '無視防禦+15%', tag: ['無視'] } },
             { group: '英雄團', job: '劍士', name: '隱月', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '死裡逃生', function: '受到致死攻擊時以10%機率擋死', tag: ['無敵'] } },
 
@@ -126,12 +137,14 @@
             { group: '曉之陣', job: '法師', name: '陰陽師', card: { function: 'B傷+6%', tag: ['B傷'] }, skill: { name: '紫扇傳授', function: '總傷+10%', tag: ['總傷'] } },
 
             { group: '江湖', job: '法師', name: '琳恩', card: { function: '無視+6%', tag: ['無視'] }, skill: { name: '氣魄', function: '攻擊BOSS怪物時B傷+4%。攻擊BOSS成功時額外+2%B傷，最多可以疊6層，重疊於每2秒發動一次，持續5秒(總共+16%B傷)', tag: ['B傷'] } },
-            { group: '江湖', job: '海盜', name: '墨玄', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '精靈集中', function: 'B傷+7%、暴擊機率+7%、HP/MP+4%', tag: ['B傷', '暴擊機率', 'HP', 'MP'] } },
+            { group: '江湖', job: '海盜', name: '墨玄', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '精靈集中', function: 'B傷+7%、爆擊機率+7%、HP/MP+4%', tag: ['B傷', '爆擊機率', 'HP', 'MP'] } },
         ];
         const App = {
             setup: () => new function () {
                 this.data = data;
                 this.query = reactive({ card: [], skill: [] });
+                this.select = reactive({ card: [], skill: [] });
+                this.tab = ref('all');
 
                 this.cardTags = computed(() => {
                     let tags = [];
@@ -151,6 +164,9 @@
 
                 this.filterData = computed(() => {
                     let $ = data;
+                    if (this.tab.value == 'skill') {
+                        $ = $.filter(x => this.select.skill.indexOf(x.skill.name) >= 0);
+                    }
                     if (this.query.card.length > 0) {
                         this.query.card.forEach(q => $ = $.filter(x => x.card.tag.indexOf(q) >= 0));
                     }
@@ -159,6 +175,10 @@
                     }
                     return $;
                 });
+
+                this.skillSelectDisabled = (item) => {
+                    return this.select.skill.length >= 12 && this.select.skill.indexOf(item) < 0
+                }
             }
         };
         Vue.createApp(App).mount("main")
