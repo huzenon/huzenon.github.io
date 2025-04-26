@@ -13,6 +13,8 @@
 </head>
 <body>
     <main class="container">
+        <div @click="copy" class="btn btn-sm btn-outline-light float-end">複製</div>
+
         <h1>MS戰地+傳授<span class="fs-6">資料日期 2025/04/26 ©Zenon</span></h1>
         <p>資料來源 2024最新角色卡系統 https://forum.gamer.com.tw/C.php?bsn=7650&snA=976618</p>
         <p>資料來源 新楓之谷傳授2025版 https://forum.gamer.com.tw/C.php?bsn=7650&snA=987437</p>
@@ -49,7 +51,7 @@
                 <button @click="tab='skill'" :class="['nav-link',{'active':tab=='skill'}]">已選擇傳授</button>
             </li>
         </ul>
-
+        
         <table class="table table-hover">
             <tr class="table-primary">
                 <th>角色</th>
@@ -139,13 +141,34 @@
             { group: '江湖', job: '法師', name: '琳恩', card: { function: '無視+6%', tag: ['無視'] }, skill: { name: '守護神的保佑', function: 'B傷+7%、爆擊機率+7%、HP/MP+4%', tag: ['B傷', '爆擊機率', 'HP', 'MP'] } },
             { group: '江湖', job: '海盜', name: '墨玄', card: { function: '爆擊傷害+6%', tag: ['爆擊傷害'] }, skill: { name: '氣魄', function: '攻擊BOSS怪物時B傷+4%。攻擊BOSS成功時額外+2%B傷，最多可以疊6層，重疊於每2秒發動一次，持續5秒(總共+16%B傷)', tag: ['B傷'] } },
         ];
-        const hash = decodeURI(window.location.hash.replace('#', '')).split(',');
         const App = {
             setup: () => new function () {
                 this.data = data;
                 this.query = reactive({ card: [], skill: [] });
-                this.select = reactive({ card: [], skill: [...hash] });
+                this.select = reactive({ card: [], skill: [] });
                 this.tab = ref('all');
+
+                if (window.location.hash.indexOf('#') >= 0) {
+                    try {
+                        const decode = window.atob(window.location.hash.slice(1));
+                        const json = decodeURI(decode);
+                        Object.assign(this.select, JSON.parse(json));
+                    } catch {
+                    }
+                }
+
+                this.copy = () => {
+                    const json = JSON.stringify(this.select);
+                    const encode = encodeURI(json);
+                    const bae64 = window.btoa(encode);
+                    const textarea = document.createElement('textarea');
+                    textarea.value = `${location.href}#${bae64}`;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('已複製到剪貼簿!');
+                }
 
                 this.cardTags = computed(() => {
                     let tags = [];
