@@ -162,7 +162,7 @@
                     const encode = encodeURI(json);
                     const bae64 = window.btoa(encode);
                     const textarea = document.createElement('textarea');
-                    textarea.value = `${location.href}#${bae64}`;
+                    textarea.value = `${location.origin}${location.pathname}#${bae64}`;
                     document.body.appendChild(textarea);
                     textarea.select();
                     document.execCommand('copy');
