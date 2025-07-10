@@ -17,21 +17,48 @@
             min-height: 100vh;
             overflow: hidden;
         }
+
+        .dark-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+            .dark-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #333;
+            }
+
+            .dark-table a {
+                color: #00bfff;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+                .dark-table a:hover {
+                    color: #008cba;
+                }
+
+            .dark-table tr:nth-child(even) {
+                background-color: #252525;
+            }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="app" class="container">
         <h1>笨狼的羅雀後街</h1>
         <div class="row">
             <div class="col-6">
                 <iframe src="https://player.twitch.tv/?channel=pupuwolf&parent=huzenon.github.io"></iframe>
                 <div>
                     <img src="https://encrypted-tbn0.gstatic.com/favicon-tbn?q=tbn:ANd9GcSZWjtT1ROSmg_5o2YkogZZgJO9Vj5PEwZOtdkbPttoHnsu5v7S8mm3wq1Lp1JDHMk7DY2K4yJsqQJ8fTM5Kcy60lDSTCZr1xt6XJZE1As" />
-                    <a href="https://www.twitch.tv/pupuwolf" target="_blank">www.twitch.tv/pupuwolf</a>
+                    <a href="https://www.twitch.tv/pupuwolf" class="text-parmary ms-1" target="_blank">www.twitch.tv/pupuwolf</a>
                 </div>
                 <div>
                     <img src="https://encrypted-tbn0.gstatic.com/favicon-tbn?q=tbn:ANd9GcTW8Eht4ooW3CRBzkms3c5X_Ec50J2XvH7cnm-htH2yfaiyjEn_ry_v41pvoPdfAhwDKkAxoTmRtQ93wrX-B672Q444vz8AN-2BlSUnWg_J" />
-                    <a href="https://discord.com/invite/n9jW4jsRMq" target="_blank">discord.com/invite/n9jW4jsRMq</a>
+                    <a href="https://discord.com/invite/n9jW4jsRMq" class="text-parmary ms-1" target="_blank">discord.com/invite/n9jW4jsRMq</a>
                 </div>
                 <div>
                     大家好 我是笨狼 只是個愛玩遊戲的平凡人<br />
@@ -44,6 +71,41 @@
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/arVlzni8DFE?si=OK97Dw958kA5r2tS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         </div>
+        <ul class="nav nav-tabs">
+            <li v-for="(item,index) in tabs" class="nav-item">
+                <a @click="tabClick(index)" :class="['nav-link',{'active':tabIndex==index}]" href="javascript:void(0)">{{item}}</a>
+            </li>
+        </ul>
+        <table v-if="tabIndex==0" class="table table-dark table-striped dark-table">
+            <tr v-for="{name,href} in table1">
+                <td><a :href="href" target="_blank">{{name}}</a></td>
+            </tr>
+        </table>
     </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        let { createApp, ref } = Vue;
+        const app = createApp({
+            setup: () => {
+                const tabs = ['小工具', 'POE 1', 'POE 2', '火炬之光'];
+                const tabIndex = ref(0);
+                const tabClick = (index) => {
+                    tabIndex.value = index;
+                }
+
+                const table1 = [
+                    { name: 'POB', href: 'https://pathofbuilding.community/' },
+                    { name: 'POE編年史', href: 'https://poedb.tw/tw/' },
+                    { name: 'POE WIKI', href: 'https://www.poewiki.net/wiki/Path_of_Exile_Wiki' },
+                    { name: 'NS過濾器', href: 'https://github.com/neversinkdev/neversink-filter/releases' },
+                    { name: '做裝模擬', href: 'https://www.craftofexile.com/' },
+                    { name: '每日迷宮', href: 'https://www.poelab.com/' },
+                    { name: '各種工具連結', href: 'https://grinding.zone/' },
+                ];
+
+                return { tabs, tabIndex, tabClick, table1 };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
