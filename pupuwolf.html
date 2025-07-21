@@ -76,30 +76,29 @@
                 <a @click="tabClick(index)" :class="['nav-link',{'active':tabIndex==index}]" href="javascript:void(0)">{{item}}</a>
             </li>
         </ul>
-        <table v-if="tabIndex==0" class="table table-dark table-striped dark-table">
-            <thead>
-                <tr>
-                    <th colspan="2">
-                        <select v-model="table0filter" class="form-select">
-                            <option value="">全部</option>
-                            <option value="BD">BD</option>
-                            <option value="策略">策略</option>
-                            <option value="小工具">小工具</option>
-                        </select>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="{tag,name,href} in table1">
-                    <td width="100px">{{tag}}</td>
-                    <td><a :href="href" target="_blank">{{name}}</a></td>
-                </tr>
-            </tbody>
-        </table>
+        <template v-for="(item,index) in tabs">
+            <table v-if="tabIndex==index" class="table table-dark table-striped dark-table">
+                <thead>
+                    <tr>
+                        <th colspan="2">
+                            <select v-model="tablefilter[index]" class="form-select">
+                                <option v-for="(value,text) in filterOption" :value="value">{{text}}</option>
+                            </select>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="{tag,name,href} in tableDataFilter">
+                        <td width="100px">{{tag}}</td>
+                        <td><a :href="href" target="_blank">{{name}}</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
     </div>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        let { createApp, ref, computed } = Vue;
+        let { createApp, ref, reactive, computed } = Vue;
         const app = createApp({
             setup: () => {
                 const tabs = ['POE 1', 'POE 2', '火炬之光'];
@@ -108,9 +107,13 @@
                     tabIndex.value = index;
                 }
 
-                const table0filter = ref('');
-                const table1 = computed(() => {
-                    const data = [
+                const filterOption = [{ value: '', text: '全部' }, { value: 'BD', text: 'BD' }, { value: '策略', text: '策略' }, { value: '小工具', text: '小工具' }];
+                const tablefilter = reactive([]);
+                for (var i = 0; i < tabs.length; i++) {
+                    tablefilter[i] = '';
+                }
+                const tableData = reactive([
+                    [
                         { tag: '策略', name: '3.26 超無腦策略 完全無需打怪 40秒一張圖 |一倉地圖40D收益|內附TFT簡單交易流程|', href: 'https://www.youtube.com/watch?v=TB4IyHS5CcE' },
                         { tag: '小工具', name: 'POB', href: 'https://pathofbuilding.community/' },
                         { tag: '小工具', name: 'POE編年史', href: 'https://poedb.tw/tw/' },
@@ -119,11 +122,19 @@
                         { tag: '小工具', name: '做裝模擬', href: 'https://www.craftofexile.com/' },
                         { tag: '小工具', name: '每日迷宮', href: 'https://www.poelab.com/' },
                         { tag: '小工具', name: '各種工具連結', href: 'https://grinding.zone/' },
-                    ];
-                    return data.filter(x => table0filter.value == '' || x.tag == table0filter.value);
+                    ],
+                    [],
+                    [
+                        { tag: '策略', name: 'SS9 刻八穩定收益策略 信標追憶材料大量產生中', href: 'https://www.youtube.com/watch?v=BuVqd0jZ5p0' },
+                    ]
+                ]);
+                const tableDataFilter = computed(() => {
+                    const data = tableData[tabIndex.value];
+                    const filter = tablefilter[tabIndex.value];
+                    return data.filter(x => filter == '' || x.tag == filter);
                 });
 
-                return { tabs, tabIndex, tabClick, table0filter, table1 };
+                return { tabs, tabIndex, tabClick, filterOption, tablefilter, tableDataFilter };
             }
         }).mount('#app');
     </script>
