@@ -82,7 +82,7 @@
                     <tr>
                         <th colspan="2">
                             <select v-model="tablefilter[index]" class="form-select">
-                                <option v-for="(value,text) in filterOption" :value="value">{{text}}</option>
+                                <option v-for="{value,text} in filterOption" :value="value">{{text}}</option>
                             </select>
                         </th>
                     </tr>
